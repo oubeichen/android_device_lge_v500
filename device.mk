@@ -22,7 +22,7 @@ PRODUCT_CHARACTERISTICS := tablet
 DEVICE_PACKAGE_OVERLAYS := $(LOCAL_PATH)/overlay
 
 # Linaro stuff
-TARGET_KERNEL_CUSTOM_TOOLCHAIN=arm-cortex_a15-linux-gnueabi-4.7
+TARGET_KERNEL_CUSTOM_TOOLCHAIN=arm-cortex_a15-linux-gnueabihf-linaro_4.7
 
 PRODUCT_PACKAGES += \
     charger_res_images \
