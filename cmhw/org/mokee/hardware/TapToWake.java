@@ -20,7 +20,8 @@ import org.mokee.hardware.util.FileUtils;
 
 public class TapToWake {
 
-    private static String CONTROL_PATH = "/sys/devices/i2c-3/3-004b/knock_on";
+    private static String CONTROL_PATH1 = "/sys/devices/i2c-3/3-004b/knock_on";
+    private static String CONTROL_PATH2 = "/sys/devices/virtual/input/lge_touch/touch_gesture"; // PATH for new touchscreen driver
     private static boolean mEnabled = true;
 
     public static boolean isSupported() {
@@ -33,6 +34,6 @@ public class TapToWake {
 
     public static boolean setEnabled(boolean state)  {
         mEnabled = state;
-        return FileUtils.writeLine(CONTROL_PATH, (state ? "1" : "0"));
+        return FileUtils.writeLine(CONTROL_PATH1, (state ? "1" : "0")) || FileUtils.writeLine(CONTROL_PATH2, (state ? "1" : "0"));
     }
 }
