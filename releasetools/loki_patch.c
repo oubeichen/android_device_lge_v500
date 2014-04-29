@@ -77,6 +77,14 @@ struct target targets[] = {
 		.lg = 1,
 	},
 	{
+		.vendor = "DoCoMo",
+		.device = "LG Optimus G Pro",
+		.build = "L04E10f",
+		.check_sigs = 0x88f1102c,
+		.hdr = 0x88f54418,
+		.lg = 1,
+	},
+	{
 		.vendor = "AT&T or HK",
 		.device = "LG Optimus G Pro",
 		.build = "E98010g or E98810b",
@@ -141,6 +149,22 @@ struct target targets[] = {
 		.lg = 1,
 	},
 	{
+		.vendor = "US Cellular",
+		.device = "LG Optimus F7",
+		.build = "US78011a",
+		.check_sigs = 0x88f112c8,
+		.hdr = 0x88f84518,
+		.lg = 1,
+	},
+	{
+		.vendor = "Sprint",
+		.device = "LG Optimus F7",
+		.build = "LG870ZV5_02",
+		.check_sigs = 0x88f11710,
+		.hdr = 0x88f842a8,
+		.lg = 1,
+	},
+	{
 		.vendor = "Virgin Mobile",
 		.device = "LG Optimus F3",
 		.build = "LS720ZV5",
@@ -169,6 +193,22 @@ struct target targets[] = {
 		.device = "LG G2",
 		.build = "VS98010b",
 		.check_sigs = 0xf8131f0,
+		.hdr = 0xf906440,
+		.lg = 1,
+	},
+	{
+		.vendor = "AT&T",
+		.device = "LG G2",
+		.build = "D80010o",
+		.check_sigs = 0xf813428,
+		.hdr = 0xf904400,
+		.lg = 1,
+	},
+	{
+		.vendor = "Verizon",
+		.device = "LG G2",
+		.build = "VS98012b",
+		.check_sigs = 0xf813210,
 		.hdr = 0xf906440,
 		.lg = 1,
 	},
@@ -237,6 +277,14 @@ struct target targets[] = {
 		.lg = 1,
 	},
 	{
+		.vendor = "KDDI",
+		.device = "LG G Flex",
+		.build = "LGL2310d",
+		.check_sigs = 0xf81261c,
+		.hdr = 0xf8b41c0,
+		.lg = 1,
+	},
+	{
 		.vendor = "International",
 		.device = "LG Optimus F5",
 		.build = "P87510e",
@@ -269,6 +317,14 @@ struct target targets[] = {
 		.lg = 1,
 	},
 	{
+                .vendor = "Verizon",
+                .device = "LG G Pad 8.3",
+                .build = "VK81010c",
+                .check_sigs = 0x88f11080,
+                .hdr = 0x88fd81b8,
+                .lg = 1,
+        },
+	{
 		.vendor = "International",
 		.device = "LG Optimus L9 II",
 		.build = "D60510a",
@@ -282,6 +338,14 @@ struct target targets[] = {
 		.build = "MS50010e",
 		.check_sigs = 0x88f10260,
 		.hdr = 0x88f70508,
+		.lg = 1,
+	},
+	{
+		.vendor = "Open EU",
+		.device = "LG Optimus F6",
+		.build = "D50510a",
+		.check_sigs = 0x88f10284,
+		.hdr = 0x88f70aa4,
 		.lg = 1,
 	},
 	{
@@ -300,38 +364,25 @@ struct target targets[] = {
 		.hdr = 0x88f54418,
 		.lg = 1,
 	},
+	{
+		.vendor = "International",
+		.device = "LG Vu 3",
+		.build = "F300L",
+		.check_sigs = 0xf813170,
+		.hdr = 0xf8d2440,
+		.lg = 1,
+	},
+	{
+		.vendor = "Sprint",
+		.device = "LG Viper",
+		.build = "LS840ZVK",
+		.check_sigs = 0x4010fe18,
+		.hdr = 0x40194198,
+		.lg = 1,
+	},
 };
 
-unsigned char patch[] =
-"\xfe\xb5"
-"\x0d\x4d"
-"\xd5\xf8"
-"\x88\x04"
-"\xab\x68"
-"\x98\x42"
-"\x12\xd0"
-"\xd5\xf8"
-"\x90\x64"
-"\x0a\x4c"
-"\xd5\xf8"
-"\x8c\x74"
-"\x07\xf5\x80\x57"
-"\x0f\xce"
-"\x0f\xc4"
-"\x10\x3f"
-"\xfb\xdc"
-"\xd5\xf8"
-"\x88\x04"
-"\x04\x49"
-"\xd5\xf8"
-"\x8c\x24"
-"\xa8\x60"
-"\x69\x61"
-"\x2a\x61"
-"\x00\x20"
-"\xfe\xbd"
-"\xff\xff\xff\xff"
-"\xee\xee\xee\xee";
+static unsigned char patch[] = PATCH;
 
 int patch_shellcode(unsigned int header, unsigned int ramdisk)
 {
@@ -362,9 +413,8 @@ int patch_shellcode(unsigned int header, unsigned int ramdisk)
 	return -1;
 }
 
-int main(int argc, char **argv)
+int loki_patch(const char* partition_label, const char* aboot_image, const char* in_image, const char* out_image)
 {
-
 	int ifd, ofd, aboot_fd, pos, i, recovery, offset, fake_size;
 	unsigned int orig_ramdisk_size, orig_kernel_size, page_kernel_size, page_ramdisk_size, page_size, page_mask;
 	unsigned long target, aboot_base;
@@ -375,16 +425,9 @@ int main(int argc, char **argv)
 	struct loki_hdr *loki_hdr;
 	char *buf;
 
-	if (argc != 5) {
-		printf("Usage: %s [boot|recovery] [aboot.img] [in.img] [out.lok]\n", argv[0]);
-		return 1;
-	}
-
-	printf("[+] loki_patch v%s\n", VERSION);
-
-	if (!strcmp(argv[1], "boot")) {
+	if (!strcmp(partition_label, "boot")) {
 		recovery = 0;
-	} else if (!strcmp(argv[1], "recovery")) {
+	} else if (!strcmp(partition_label, "recovery")) {
 		recovery = 1;
 	} else {
 		printf("[+] First argument must be \"boot\" or \"recovery\".\n");
@@ -392,21 +435,21 @@ int main(int argc, char **argv)
 	}
 
 	/* Open input files */
-	aboot_fd = open(argv[2], O_RDONLY);
+	aboot_fd = open(aboot_image, O_RDONLY);
 	if (aboot_fd < 0) {
-		printf("[-] Failed to open %s for reading.\n", argv[2]);
+		printf("[-] Failed to open %s for reading.\n", aboot_image);
 		return 1;
 	}
 
-	ifd = open(argv[3], O_RDONLY);
+	ifd = open(in_image, O_RDONLY);
 	if (ifd < 0) {
-		printf("[-] Failed to open %s for reading.\n", argv[3]);
+		printf("[-] Failed to open %s for reading.\n", in_image);
 		return 1;
 	}
 
-	ofd = open(argv[4], O_WRONLY|O_CREAT|O_TRUNC, 0644);
+	ofd = open(out_image, O_WRONLY|O_CREAT|O_TRUNC, 0644);
 	if (ofd < 0) {
-		printf("[-] Failed to open %s for writing.\n", argv[4]);
+		printf("[-] Failed to open %s for writing.\n", out_image);
 		return 1;
 	}
 
@@ -423,27 +466,15 @@ int main(int argc, char **argv)
 	}
 
 	target = 0;
+	aboot_base = *(unsigned int *)(aboot + 12) - 0x28;
 
 	for (ptr = aboot; ptr < aboot + st.st_size - 0x1000; ptr++) {
 		if (!memcmp(ptr, PATTERN1, 8) ||
 			!memcmp(ptr, PATTERN2, 8) ||
-			!memcmp(ptr, PATTERN3, 8)) {
+			!memcmp(ptr, PATTERN3, 8) ||
+			!memcmp(ptr, PATTERN4, 8) ||
+			!memcmp(ptr, PATTERN5, 8)) {
 
-			aboot_base = ABOOT_BASE_SAMSUNG;
-			target = (unsigned long)ptr - (unsigned long)aboot + aboot_base;
-			break;
-		}
-
-		if (!memcmp(ptr, PATTERN4, 8)) {
-
-			aboot_base = ABOOT_BASE_LG;
-			target = (unsigned long)ptr - (unsigned long)aboot + aboot_base;
-			break;
-		}
-
-		if (!memcmp(ptr, PATTERN5, 8)) {
-
-			aboot_base = ABOOT_BASE_G2;
 			target = (unsigned long)ptr - (unsigned long)aboot + aboot_base;
 			break;
 		}
@@ -457,7 +488,6 @@ int main(int argc, char **argv)
 		for (ptr = aboot; ptr < aboot + st.st_size - 0x1000; ptr++) {
 			if (!memcmp(ptr, PATTERN6, 8)) {
 
-				aboot_base = ABOOT_BASE_LG;
 				target = (unsigned long)ptr - (unsigned long)aboot + aboot_base;
 				break;
 			}
@@ -509,7 +539,7 @@ int main(int argc, char **argv)
 			return 1;
 		}
 
-		printf("[+] Copied Loki image to %s.\n", argv[4]);
+		printf("[+] Copied Loki image to %s.\n", out_image);
 
 		return 0;
 	}
@@ -618,7 +648,7 @@ int main(int argc, char **argv)
 	close(ofd);
 	close(aboot_fd);
 
-	printf("[+] Output file written to %s\n", argv[4]);
+	printf("[+] Output file written to %s\n", out_image);
 
 	return 0;
 }
